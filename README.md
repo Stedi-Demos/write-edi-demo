@@ -16,9 +16,11 @@ As the illustration below shows, the `write-outbound-edi` function performs seve
 
 1. The [EDI Translate](https://www.stedi.com/docs/edi-translate) API retrieves the guide, validates that the input conforms to the guide schema, and generates the X12 EDI document.
 
-1. The function finally saves the EDI string as a file in a [Bucket](https://www.stedi.com/docs/buckets) (for later retrieval via SFTP).
+1. The function finally saves the EDI string as a file in a [Bucket](https://www.stedi.com/docs/buckets).
 
-![write--outbound-edi function flow](./assets/write-edi.jpg)
+1. A trading partner can retrieve the EDI from Buckets using [SFTP](https://www.stedi.com/docs/sftp).
+
+![write--outbound-edi function flow](./assets/write-edi.svg)
 
 ## Resource directories
 
