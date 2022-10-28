@@ -6,7 +6,6 @@ import {
   CreateGuideInput,
   GuidesClient,
   GuidesClientConfig,
-  GuideVisibility,
   ListGuidesCommand,
   PublishGuideCommand,
   ResourceConflictException
@@ -65,14 +64,16 @@ const createGuide = async (namespace: string, guide: CreateGuideInput): Promise<
   if (!createGuideResponse.id)
     throw new Error(`[${namespace}] Error creating guide (id not found in response)`);
 
-  await publishGuide(createGuideResponse.id);
+  if (!createGuideResponse.publishedAt) {
+    await publishGuide(createGuideResponse.id);
+  }
+
   return createGuideResponse.id;
 };
 
 const publishGuide = async (guideId: string): Promise<any> => {
   return await guidesClient().send(new PublishGuideCommand({
     id: guideId,
-    visibility: GuideVisibility.INTERNAL
   }));
 };
 

@@ -53,11 +53,11 @@ The [resources](./src/resources) directory contains templates that can be used t
    * `STEDI_API_KEY`: Your Stedi API Key - used to deploy the function and internally to interact with product APIs. If you don't already have one, you can generate an [API Key here](https://www.stedi.com/app/settings/api-keys). 
    * `ENABLED_TRANSACTION_SETS`: a comma separated list of transaction sets for which you would like to be able to read inbound EDI documents. The values in the list MUST match available resource sets under the [resources](./src/resources) directory, and conform to the pattern `${ediStandard}-${release}-${transactionType}` (for example: `X12-5010-855`). Note: you can always come back and add or remove entries from this list. After doing so, you'll just need to re-run the `create-guides`, `create-mappings`, and `deploy` steps described below in order to apply the changes.
 
-  example `.env` file:
-  ```
-  STEDI_API_KEY=<REPLACE_ME>
-  ENABLED_TRANSACTION_SETS=X12-5010-850,X12-5010-855
-  ```
+   Example `.env` file:
+   ```
+   STEDI_API_KEY=<REPLACE_ME>
+   ENABLED_TRANSACTION_SETS=X12-5010-850,X12-5010-855
+   ```
    
   The subsequent setup scripts will use the `ENABLED_TRANSACTION_SETS` environment variable to determine which resources to deploy to your account.
 
