@@ -1,0 +1,22 @@
+name: Scheduled Write EDI Batch Invocation
+
+on:
+  schedule:
+    # run every 15 mins (starting from 10 after each hour)
+    #- cron:  '10/15 * * * *'
+    # run every 5 mins (starting from 3 after each hour)
+    - cron:  '3/5 * * * *'
+
+jobs:
+  run_sftp_poller:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "18.7"
+      - run: npm ci
+      - run: npm run batch-invoke
+        env:
+          STEDI_API_KEY: ${{secrets.STEDI_API_KEY}}

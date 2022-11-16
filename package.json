@@ -9,7 +9,8 @@
     "create-guides": "ts-node-esm ./src/setup/createGuides.ts",
     "create-mappings": "ts-node-esm ./src/setup/createMappings.ts",
     "create-keyspace": "ts-node-esm ./src/setup/createKeyspace.ts",
-    "configure-buckets": "ts-node-esm ./src/setup/configureBuckets.ts"
+    "configure-buckets": "ts-node-esm ./src/setup/configureBuckets.ts",
+    "batch-invoke": "ts-node-esm ./src/scripts/batchInvoke.ts"
   },
   "author": "",
   "license": "ISC",
