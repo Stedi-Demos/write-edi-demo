@@ -35,16 +35,23 @@ export const functionClient = (): FunctionsClient => {
 
 export const invokeFunction = async (
   functionName: string,
-  input: any
-): Promise<any> => {
+  input?: any
+): Promise<string> => {
+  const requestPayload = input
+    ? new TextEncoder().encode(JSON.stringify(input))
+    : undefined;
+
   const result = await functionClient().send(
     new InvokeFunctionCommand({
       functionName,
-      requestPayload: new TextEncoder().encode(JSON.stringify(input)),
+      requestPayload,
     })
   );
+  if (!result?.responsePayload) {
+    throw new Error("no response payload received");
+  }
 
-  return result.responsePayload?.toString();
+  return Buffer.from(result.responsePayload).toString("utf-8");
 };
 
 export const createFunction = async (
