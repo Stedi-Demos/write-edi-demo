@@ -29,11 +29,11 @@ const DEFAULT_INVOCATION_PAYLOADS = [DEFAULT_850_PAYLOAD, DEFAULT_855_PAYLOAD];
   });
 
   const results = await Promise.all(promises);
-
   console.log(`\nDone. Batch invocation count: ${loopCount * DEFAULT_INVOCATION_PAYLOADS.length}`);
 
+  const invocationResults = results.flat().flatMap((result) => result.invocationResult);
   // exit with non-successful response if any failures were encountered
-  if (results.flat().some((result) => result.hasOwnProperty("failureRecord"))) {
+  if (invocationResults.some((result) => JSON.parse(result).hasOwnProperty("failureRecord"))) {
     console.log(`errors encountered during processing`);
     process.exit(-1);
   }
