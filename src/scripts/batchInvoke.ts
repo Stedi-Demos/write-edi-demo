@@ -23,7 +23,7 @@ const DEFAULT_INVOCATION_PAYLOADS = [DEFAULT_850_PAYLOAD, DEFAULT_855_PAYLOAD];
         invocationResult
       };
 
-      console.log(JSON.stringify(result));
+      console.log(JSON.stringify(result, null, 2));
       return result;
     }));
   });
