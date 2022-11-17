@@ -8,7 +8,7 @@ on:
     - cron:  '3/5 * * * *'
 
 jobs:
-  run_sftp_poller:
+  run_batch_invocation:
     runs-on: ubuntu-latest
 
     steps:
