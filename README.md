@@ -1,6 +1,8 @@
 # Stedi write EDI demo
 
-This repo contains an end-to-end demo for writing X12 EDI documents. This implementation demonstrates one possible way to interact with Stedi's APIs to achieve a typical EDI write workload; your implementation may include some or all of these products depending on your particular systems and requirements. 
+This repo contains an end-to-end demo for writing X12 EDI documents. This implementation demonstrates one possible way to interact with Stedi's APIs to achieve a typical EDI write workload; your implementation may include some or all of these products depending on your particular systems and requirements.
+
+Watch a video walkthrough for this tutorial on [YouTube](https://youtu.be/nd5rarusMmI).
 
 The main orchestration point of this demo is a Stedi function called `write-outbound-edi`, which is written in [TypeScript](./src/functions/write/outbound-edi/handler.ts). For this workload, the function is the entry point and expected to be called along with a JSON payload that represents the source data that needs to be converted into the X12 EDI document.
 
