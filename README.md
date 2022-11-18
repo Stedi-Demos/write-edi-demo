@@ -22,7 +22,7 @@ As the illustration below shows, the `write-outbound-edi` function performs seve
 
 1. A trading partner can retrieve the EDI from Buckets using [SFTP](https://www.stedi.com/docs/sftp).
 
-![write--outbound-edi function flow](./assets/write-edi.svg)
+![write--outbound-edi function flow](./assets/write-edi-dark.svg)
 
 ## Resource directories
 
