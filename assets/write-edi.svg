@@ -6,7 +6,7 @@
       --black:      #181819;
       --gray:       #313135;
       --light-gray: #7c7c83;
-      --white:      #f2f2f3;
+      --white:      #ffffff;
       --magenta:    #b660c3;
       --blue:       #0082e6;
       --red:        #e5484d;
@@ -38,7 +38,7 @@
   </style>
 
   <defs>
-    <pattern id="external" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse" shape-rendering="crispEdges">
+    <pattern id="external" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
       <rect x="0" y="0" width="3" height="3" />
       <rect x="6" y="6" width="3" height="3" />
     </pattern>
