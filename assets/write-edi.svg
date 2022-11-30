@@ -14,7 +14,7 @@
       --yellow:     #ffb224;
     }
  
-    text { font: 24px "IBM Plex Mono", monospace; text-anchor: middle; dominant-baseline: middle; letter-spacing: 0.1ex }
+    text { font: 24px "IBM Plex Mono", "Monaco", monospace; text-anchor: middle; dominant-baseline: middle; letter-spacing: 0.1ex }
     .product text, .system text { font: 30px sans-serif }
     .system text { fill: var(--black) }
     .product text { fill: var(--white) }
@@ -26,6 +26,7 @@
     .connector path { fill: var(--light-gray) }
     .arrow { fill: var(--light-gray); stroke: var(--light-gray); stroke-width: 4 }
     #external rect { fill: #b0b0b0 }
+    #external rect.background { fill: var(--white) }
     .step circle { fill: var(--magenta) }
 
     @media (prefers-color-scheme: dark) {
@@ -34,11 +35,13 @@
       .data text { fill: var(--white); stroke: var(--white) }
       .data rect { fill: var(--black); stroke: var(--white) }
       #external rect { fill: #484848 }
+      #external rect.background { fill: var(--black) }
     }
   </style>
 
   <defs>
     <pattern id="external" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+      <rect class="background" x="0" y="0" width="12" height="12" />
       <rect x="0" y="0" width="3" height="3" />
       <rect x="6" y="6" width="3" height="3" />
     </pattern>
