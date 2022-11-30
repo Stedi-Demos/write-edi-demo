@@ -3,9 +3,7 @@ name: Scheduled Write EDI Batch Invocation
 on:
   schedule:
     # run every 15 mins (starting from 10 after each hour)
-    #- cron:  '10/15 * * * *'
-    # run every 5 mins (starting from 3 after each hour)
-    - cron:  '3/5 * * * *'
+    - cron:  '10/15 * * * *'
 
 jobs:
   run_batch_invocation:
@@ -17,6 +15,7 @@ jobs:
         with:
           node-version: "18.7"
       - run: npm ci
-      - run: npm run batch-invoke
+        # run batch-invoke with loopCount=1 (will write one document for each txn set to bucket)
+      - run: npm run batch-invoke 1
         env:
           STEDI_API_KEY: ${{secrets.STEDI_API_KEY}}
