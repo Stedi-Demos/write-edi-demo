@@ -144,6 +144,8 @@ This repo includes a basic deployment script to bundle and deploy the `write-out
    EXECUTIONS_BUCKET_NAME=4c22f54a-9ecf-41c8-b404-6a1f20674953-executions
    ```
 
+   > Other than the Stedi API key, you shouldn’t store secrets in environment variables. If your function needs access to passwords, API keys, and the like, store them in [Stash](/docs/stash) and access Stash from your function. The Stedi API key is the only exception, because you need it to access other Stedi products, including Stash.
+
 1. To deploy the function:
    ```bash
    npm run deploy
