@@ -19,7 +19,7 @@ let _executionsBucketClient: BucketsClient;
 let _infiniteLoopCheckPassed: boolean = false;
 
 export type FailureRecord = { bucketName?: string, key: string };
-export type FailureResponse = { message: string, failureRecord: FailureRecord, error: ErrorObject }
+export type FailureResponse = { statusCode: number, message: string, failureRecord: FailureRecord, error: ErrorObject }
 
 export const recordNewExecution = async (executionId: string, input: any) => {
   const client = await executionsBucketClient();
@@ -72,9 +72,10 @@ export const markExecutionAsSuccessful = async (executionId: string) => {
 export const failedExecution = async (executionId: string, error: Error): Promise<FailureResponse> => {
   const rawError = serializeError(error)
   const failureRecord = await markExecutionAsFailed(executionId, rawError);
+  const statusCode = (error as any)?.["$metadata"]?.httpStatusCode || 500;
   const message = "execution failed";
   await trackProgress(message, { error: rawError });
-  return { message, failureRecord, error: rawError }
+  return { statusCode, message, failureRecord, error: rawError }
 }
 
 const markExecutionAsFailed = async (
