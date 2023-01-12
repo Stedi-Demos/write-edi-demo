@@ -1,7 +1,13 @@
 {
   "ediMetadata": {
     "release": "5010",
-    "code": "855"
+    "transactionSet": "855",
+    "interchangeHeader":{
+      "senderQualifier": "ZZ",
+      "senderId": "AMERCHANT",
+      "receiverQualifier": "14",
+      "receiverId": "ANOTHERMERCH"
+    }
   },
   "orderAcknowledgementDetails": {
     "internalOrderNumber": "ACME-4567",
