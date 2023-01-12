@@ -1,7 +1,6 @@
 import { format } from "date-fns";
 import { serializeError } from "serialize-error";
 
-import { IncrementValueCommand, StashClient } from "@stedi/sdk-client-stash";
 import { MapDocumentCommand, MappingsClient } from "@stedi/sdk-client-mappings";
 import { PutObjectCommand, PutObjectCommandInput, } from "@stedi/sdk-client-buckets";
 
@@ -15,8 +14,10 @@ import {
 } from "../../../lib/execution.js";
 import { getEnvVarNameForResource, requiredEnvVar } from "../../../lib/environment.js";
 import { DEFAULT_SDK_CLIENT_PROPS } from "../../../lib/constants.js";
+import { EdiMetadata } from "./types";
+import { generateControlNumber } from "../../../lib/generateControlNumber";
+import { lookupFunctionalIdentifierCode } from "../../../lib/lookupFunctionalIdentifierCode";
 
-const stashClient = new StashClient(DEFAULT_SDK_CLIENT_PROPS);
 const mappingsClient = new MappingsClient(DEFAULT_SDK_CLIENT_PROPS);
 
 // Buckets client is shared across handler and execution tracking logic
@@ -29,56 +30,56 @@ export const handler = async (event: any): Promise<Record<string, any>> => {
   try {
     await recordNewExecution(executionId, event);
 
-    const transactionSetIdentifier = getTransactionSetIdentifierForInput(event.ediMetadata);
+    const ediMetadata = EdiMetadata.parse(event.ediMetadata);
+    const resourceIdKey = `X12-${ediMetadata.release}-${ediMetadata.transactionSet}`;
 
     // Fail fast if required env vars are missing
-    const guideEnvVarName = getEnvVarNameForResource("guide", transactionSetIdentifier);
-    const mappingEnvVarName = getEnvVarNameForResource("mapping", transactionSetIdentifier);
+    const guideEnvVarName = getEnvVarNameForResource("guide", resourceIdKey);
+    const mappingEnvVarName = getEnvVarNameForResource("mapping", resourceIdKey);
     const guideId = requiredEnvVar(guideEnvVarName);
     const mappingId = requiredEnvVar(mappingEnvVarName);
 
-    const functionalIdentifierCode = "OW";
-    const senderId = "AMERCHANT";
-    const receiverId = "ANOTHERMERCH";
-    const usageIndicatorCode = "T";
+    // extract envelope metadata needed for control number generation
+    const isaSendingPartnerId = `${ediMetadata.interchangeHeader.senderQualifier}-${ediMetadata.interchangeHeader.senderId}`;
+    const isaReceivingPartnerId = `${ediMetadata.interchangeHeader.receiverQualifier}-${ediMetadata.interchangeHeader.receiverId}`;
+    const usageIndicatorCode = ediMetadata.interchangeHeader.usageIndicatorCode;
+    const gsSendingPartnerId = ediMetadata?.groupHeader?.applicationSenderCode || ediMetadata.interchangeHeader.senderId;
+    const gsReceivingPartnerId = ediMetadata?.groupHeader?.applicationReceiverCode || ediMetadata.interchangeHeader.receiverId;
 
     const documentDate = new Date();
 
-    // Generate control number for sender/receiver pair
-    let { value: controlNumber } = await stashClient.send(
-      new IncrementValueCommand({
-        keyspaceName: "outbound-control-numbers",
-        key: `${usageIndicatorCode}-${functionalIdentifierCode}-${senderId}-${receiverId}`,
-        amount: 1,
-      })
-    );
+    // resolve the functional identifier code for the transaction set
+    const functionalIdentifierCode = lookupFunctionalIdentifierCode(ediMetadata.transactionSet);
 
-    if (!controlNumber) {
-      return failedExecution(executionId, new Error("Issue generating control number"));
-    }
-
-    controlNumber = controlNumber.toString().padStart(9, "0");
-    console.log(`generated control number: ${controlNumber}`);
+    // Generate control numbers for sender/receiver pair
+    const isaControlNumber = await generateControlNumber({
+      segment: "ISA",
+      usageIndicatorCode,
+      sendingPartnerId: isaSendingPartnerId,
+      receivingPartnerId: isaReceivingPartnerId,
+    });
+    const gsControlNumber = await generateControlNumber({
+      segment: "GS",
+      usageIndicatorCode,
+      sendingPartnerId: gsSendingPartnerId,
+      receivingPartnerId: gsReceivingPartnerId,
+    });
 
     // Configure envelope data (interchange control header and functional group header) to combine with mapping result
     const envelope = {
       interchangeHeader: {
-        senderQualifier: "ZZ",
-        senderId,
-        receiverQualifier: "14",
-        receiverId,
+        ...ediMetadata.interchangeHeader,
         date: format(documentDate, "yyyy-MM-dd"),
         time: format(documentDate, "HH:mm"),
-        controlNumber,
-        usageIndicatorCode,
+        controlNumber: isaControlNumber,
       },
       groupHeader: {
         functionalIdentifierCode,
-        applicationSenderCode: "WRITEDEMO",
-        applicationReceiverCode: "072271711TMS",
+        applicationSenderCode: gsSendingPartnerId,
+        applicationReceiverCode: gsReceivingPartnerId,
         date: format(documentDate, "yyyy-MM-dd"),
         time: format(documentDate, "HH:mm:ss"),
-        controlNumber,
+        controlNumber: gsControlNumber,
       },
     };
 
@@ -86,7 +87,7 @@ export const handler = async (event: any): Promise<Record<string, any>> => {
     const mapResult = await mappingsClient.send(
       new MapDocumentCommand({
         id: mappingId,
-        content: { controlNumber, ...event },
+        content: event,
       })
     );
     console.log(`mapping result: ${JSON.stringify(mapResult)}`);
@@ -97,7 +98,7 @@ export const handler = async (event: any): Promise<Record<string, any>> => {
     // Save generated X12 EDI file to SFTP-accessible Bucket
     const putCommandArgs: PutObjectCommandInput = {
       bucketName: process.env.SFTP_BUCKET_NAME,
-      key: `trading_partners/${receiverId}/outbound/${controlNumber}.edi`,
+      key: `trading_partners/${ediMetadata.interchangeHeader.receiverId}/outbound/${isaControlNumber}-${ediMetadata.transactionSet}.edi`,
       body: translation,
     };
     await bucketsClient.send(new PutObjectCommand(putCommandArgs));
@@ -112,13 +113,4 @@ export const handler = async (event: any): Promise<Record<string, any>> => {
     const error = e instanceof Error ? e : new Error(`unknown error: ${serializeError(e)}`);
     return failedExecution(executionId, error);
   }
-};
-
-// Use ediMetadata input property to construct the transaction set identifier using the convention used in this demo
-const getTransactionSetIdentifierForInput = (ediMetadata: any): string => {
-  if (!ediMetadata?.release || !ediMetadata?.code) {
-    throw new Error("Invalid input: `ediMetadata: { release: string; code: string; }` property is required");
-  }
-
-  return `X12-${ediMetadata.release}-${ediMetadata.code}`;
 };
