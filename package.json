@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@stedi/sdk-client-as2": "^0.1.1",
     "@stedi/sdk-client-buckets": "^0.0.23",
     "@stedi/sdk-client-edi-translate": "^0.0.46",
     "@stedi/sdk-client-functions": "^0.0.23",

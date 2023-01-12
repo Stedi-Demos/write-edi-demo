@@ -17,8 +17,10 @@ import { DEFAULT_SDK_CLIENT_PROPS } from "../../../lib/constants.js";
 import { EdiMetadata } from "./types";
 import { generateControlNumber } from "../../../lib/generateControlNumber";
 import { lookupFunctionalIdentifierCode } from "../../../lib/lookupFunctionalIdentifierCode";
+import { As2Client, StartFileTransferCommand } from "@stedi/sdk-client-as2";
 
 const mappingsClient = new MappingsClient(DEFAULT_SDK_CLIENT_PROPS);
+const as2Client = new As2Client(DEFAULT_SDK_CLIENT_PROPS);
 
 // Buckets client is shared across handler and execution tracking logic
 const bucketsClient = bucketClient();
@@ -96,12 +98,24 @@ export const handler = async (event: any): Promise<Record<string, any>> => {
     const translation = await translateJsonToEdi(mapResult.content, guideId, envelope);
 
     // Save generated X12 EDI file to SFTP-accessible Bucket
+    const destinationBucket = requiredEnvVar("SFTP_BUCKET_NAME");
+    const destinationKey =
+      `trading_partners/${ediMetadata.interchangeHeader.receiverId}/outbound/${isaControlNumber}-${ediMetadata.transactionSet}.edi`;
     const putCommandArgs: PutObjectCommandInput = {
-      bucketName: process.env.SFTP_BUCKET_NAME,
-      key: `trading_partners/${ediMetadata.interchangeHeader.receiverId}/outbound/${isaControlNumber}-${ediMetadata.transactionSet}.edi`,
+      bucketName: destinationBucket,
+      key: destinationKey,
       body: translation,
     };
     await bucketsClient.send(new PutObjectCommand(putCommandArgs));
+
+    if (event.as2ConnectorId) {
+      await as2Client.send(
+        new StartFileTransferCommand({
+          connectorId: event.as2ConnectorId,
+          sendFilePaths: [`/${destinationBucket}/${destinationKey}`],
+        }),
+      );
+    }
 
     await markExecutionAsSuccessful(executionId);
 
