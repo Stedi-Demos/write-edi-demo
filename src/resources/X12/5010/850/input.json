@@ -6,8 +6,7 @@
       "senderQualifier": "ZZ",
       "senderId": "AMERCHANT",
       "receiverQualifier": "14",
-      "receiverId": "ANOTHERMERCH",
-      "usageIndicatorCode": "T"
+      "receiverId": "ANOTHERMERCH"
     }
   },
   "orderDetails": {
