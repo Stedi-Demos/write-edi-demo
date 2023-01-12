@@ -30,14 +30,20 @@ The [resources](./src/resources) directory contains templates that can be used t
 * `guide.json`: a [guide](https://www.stedi.com/docs/guides) used to generate the EDI document
 * `map.json`: a [mapping](https://www.stedi.com/docs/mappings) that converts the sample JSON input to the schema of the guide
 * `input.json`: the sample JSON input to the workflow  
-   Note, each `input.json` file MUST include an `ediMetadata` property that includes `release` and `code` properties that correspond to the release and transaction set code of the resources in that directory. For example:
+   Note, each `input.json` file MUST include an `ediMetadata` property that includes `release` and `transactionSet` properties that correspond to the release and transaction set code of the resources in that directory, as well as sender and receiver qualifiers and IDs. For example:
   ```json 
   "ediMetadata": {
     "release": "5010",
-    "code": "850"
-  }
+    "transactionSet": "850",
+    "interchangeHeader":{
+      "senderQualifier": "ZZ",
+      "senderId": "AMERCHANT",
+      "receiverQualifier": "14",
+      "receiverId": "ANOTHERMERCH",
+    }
+  },
   ```
-  The `ediMetadata` property is used by the `write-outbound-edi` function to identify the appropriate guide and mapping to use.
+  The data in the `ediMetadata` property is used by the `write-outbound-edi` function to identify the appropriate guide and mapping to use, and to populate the EDI envelopes for the outbound document.
 
 ## Prerequisites
 
